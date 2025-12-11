@@ -5,6 +5,14 @@ build/
 dist/
 wheels/
 *.egg-info
+old
+DeepSeek-OCR
+sample_papers
+outputs
+temp
+resources
+models/chemvlm
+models/moldetv2
 
 # Virtual environments
 .venv

@@ -1,0 +1,3 @@
+# Ignore DeepSeek-OCR from uv workspace detection
+DeepSeek-OCR/
+DeepSeek-OCR/**

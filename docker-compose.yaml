@@ -1,0 +1,21 @@
+services:
+  ollama:
+    image: ollama/ollama:0.13.3-rc1
+    network_mode: host
+    volumes:
+      - ollama-exmatai:/root/.ollama
+      - ./ollama-pull.sh:/ollama-pull.sh
+    container_name: ollama-exmatai
+    tty: true
+    restart: unless-stopped
+    entrypoint: ["/usr/bin/bash", "/ollama-pull.sh"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all  
+              capabilities: [gpu]
+ 
+volumes:
+  ollama-exmatai: {}
