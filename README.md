@@ -11,22 +11,38 @@ Battery materials research papers contain valuable data scattered across text, f
 The pipeline consists of six sequential agents, each handling a specific extraction task:
 
 ```mermaid
-graph TD;
-    A[PDF Input] --> B[Agent 1: OCR & Document Analysis];
-    B --> C[Agent 2: Text Analysis];
-    C --> D[Agent 3: Structure Extraction];
-    D --> E[Agent 4: SMILES Mapping];
-    C --> F[Agent 5: Plot Data Extraction];
-    D --> G[Agent 6: Experiment Assembly];
-    E --> G;
-    F --> G;
-    G --> H[Structured JSON Output];
-    B -->|Text + Images| B1[DeepSeek-OCR];
-    C -->|Materials + Metadata| C1[Qwen3.5 35B];
-    D -->|Bounding Boxes| D1[MolDetV2 YOLO];
-    D -->|SMILES Strings| D2[MolNexTR];
-    E -->|Mapping| E1[Qwen3-VL 32B];
-    F -->|Performance Data| F1[Qwen3-VL 32B];
+flowchart TD
+    %% Styling
+    classDef io fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef agent fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef model fill:#fff3e0,stroke:#e65100,stroke-width:1px,stroke-dasharray: 5 5,color:#000
+
+    In([📄 PDF Document]):::io --> A1
+    
+    A1[Agent 1: OCR]:::agent -->|Text & Images| A2[Agent 2: Text Analysis]:::agent
+    
+    A2 -->|Structure Figs| A3[Agent 3: Structure Extraction]:::agent
+    A2 -->|Plot Figs| A5[Agent 5: Plot Extraction]:::agent
+    
+    A3 -->|Detected Structures| A4[Agent 4: SMILES Mapping]:::agent
+    
+    A2 -.->|Parsed Text| A6
+    A4 -->|Mapped SMILES| A6[Agent 6: Experiment Assembly]:::agent
+    A5 -->|Extracted CSVs| A6
+    
+    A6 --> Out([📊 Final JSON Output]):::io
+
+    %% AI Models (attached to agents)
+    M1[[DeepSeek-OCR]]:::model
+    M2[[Qwen3.5 35B]]:::model
+    M3[[MolDetV2 + MolNexTR]]:::model
+    M4[[Qwen3-VL 32B]]:::model
+
+    A1 -.-> M1
+    A2 -.-> M2
+    A3 -.-> M3
+    A4 -.-> M4
+    A5 -.-> M4
 ```
 
 ### Detailed Workflow
