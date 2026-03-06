@@ -8,11 +8,15 @@ wheels/
 old
 DeepSeek-OCR
 sample_papers
+sample_outputs
 outputs
+outputs_old
+outputs_old_2
+outputs_old_3
 temp
 resources
-models/chemvlm
-models/moldetv2
+models
+logs
 
 # Virtual environments
 .venv

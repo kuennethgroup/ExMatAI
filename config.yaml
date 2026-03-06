@@ -4,80 +4,55 @@
 models:
   ocr:
     name: "deepseek-ocr"
-    platform: "ollama"
+    venv_path: "./DeepSeek-OCR/.venv"
+    script_path: "./DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm/run_dpsk_ocr_pdf.py"
+    config_path: "./DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm/config.py"
     params:
       base_size: 1024
+      image_size: 640
       crop_mode: true
-  
-  text_analysis:
-    name: "qwen3:8b"
+      min_crops: 2
+      max_crops: 6
+      max_concurrency: 100
+      num_workers: 64
+
+  text_llm:
+    name: "qwen3.5:35b"
     platform: "ollama"
+    base_url: "http://localhost:11434"
     params:
-      temperature: 0.7
-      format: "json"
-  
-  text_vl:
-    name: "qwen3-vl:8b"
+      temperature: 0.0
+
+  vision_llm:
+    name: "qwen3-vl:32b"
     platform: "ollama"
+    base_url: "http://localhost:11434"
     params:
-      temperature: 0.5
-  
+      temperature: 0.0
+
   structure_detection:
-    model_id: "UniParser/MolDetv2"
+    repo_id: "UniParser/MolDetv2"
     filename: "moldet_v2_yolo11n_640_general.pt"
     params:
       imgsz: 640
       conf: 0.5
-  
-  smiles_generation:
-    model_id: "AI4Chem/ChemVLM-26B-1-2"
-    params:
-      max_length: 1000
-      do_sample: true
-      temperature: 0.7
-      top_p: 0.9
-      max_num: 6
-      input_size: 448
+      device: 0
 
 # Processing Settings
 processing:
-  pdf_dpi: 300
-  batch_size: 1
-  max_workers: 4
   temp_dir: "temp"
-  
+
 # Output Settings
 output:
   directory: "outputs"
   format: "json"
-  indent: 2
-  include_metadata: true
-  save_intermediate: false
-
-# Extraction Settings
-extraction:
-  # Plot data extraction
-  plots:
-    cycle_interval: 10  # Extract every 10 cycles
-    extract_voltage_profiles: true
-    min_confidence: 0.7
-  
-  # Structure matching
-  structures:
-    fuzzy_match_threshold: 0.8
-    require_label_match: true
-  
-  # Validation
-  validation:
-    require_cathode: true
-    require_anode: true
-    require_electrolyte: true
-    min_experiments: 1
+  indent: 4
+  save_intermediate: true
 
 # Logging
 logging:
   level: "INFO"
-  file: "logs/exmat_ai.log"
+  file: "logs/exmatai.log"
   format: "%(asctime)s | %(levelname)s | %(message)s"
   console_output: true
 

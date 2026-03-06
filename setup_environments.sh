@@ -44,11 +44,10 @@ if [ -d ".venv" ]; then
     rm -rf .venv
 fi
 
-# Create isolated virtual environment (NOT using uv's project management)
+# Create isolated virtual environment
 echo ""
 echo "🐍 Creating ISOLATED DeepSeek-OCR virtual environment (Python 3.10)..."
 
-# Use uv venv directly without project context
 UV_PROJECT_ENVIRONMENT="" uv venv .venv --python 3.10 --seed
 
 echo "✓ Virtual environment created at DeepSeek-OCR/.venv"
@@ -117,7 +116,7 @@ echo "🔧 PART 2: Setting up ExMatAI Environment"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Create ExMatAI virtual environment (no project mode)
+# Create ExMatAI virtual environment
 if [ -d ".venv" ]; then
     echo "🗑️  Removing existing .venv..."
     rm -rf .venv
@@ -135,7 +134,12 @@ echo ""
 echo "📦 Installing ExMatAI dependencies..."
 
 # Install dependencies from requirements.txt
+echo "  ├─ Installing core requirements..."
 uv pip install -r requirements.txt
+
+# Install MolNexTR (SMILES generation from molecular structure images)
+echo "  ├─ Installing MolNexTR (from GitHub)..."
+uv pip install git+https://github.com/CYF2000127/MolNexTR
 
 deactivate
 
@@ -178,7 +182,7 @@ echo ""
 echo "  ExMatAI Environment:"
 echo "    Path: ./.venv"
 echo "    Python: 3.11"
-echo "    Packages: langgraph, ultralytics, rdkit, etc."
+echo "    Packages: langgraph, ultralytics, figpanel, MolNexTR, langchain-ollama, etc."
 echo ""
 echo "📝 Usage:"
 echo ""

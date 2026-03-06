@@ -1,31 +1,34 @@
 # Core ML (excluding torch - will be installed via uv with CUDA)
-transformers==4.37.2
+transformers>=4.37.0
 
-# LangGraph
+# LangGraph / LangChain
 langgraph>=0.0.40
 langgraph-checkpoint>=0.0.6
+langchain-ollama>=0.3.0
+langchain-core>=0.3.0
 
-# Object Detection
+# LLM Client
+ollama>=0.6.1
+pydantic>=2.0.0
+
+# Object Detection (Structure Detection)
 ultralytics>=8.0.0
 
-# Chemistry
-rdkit>=2023.9.1
-pubchempy>=1.0.4
+# Figure Panel Detection
+figpanel[full]
 
 # ML utilities
 huggingface-hub>=0.19.4
-accelerate>=0.25.0
 safetensors>=0.4.1
 
 # Image/Document processing
 Pillow>=10.1.0
 opencv-python>=4.8.1
-PyMuPDF>=1.23.0
+matplotlib>=3.7.0
 
 # Data handling
 pandas>=2.1.3
 numpy>=1.24.3
-openpyxl>=3.1.2
 
 # Utilities
 pyyaml>=6.0.1
@@ -34,13 +37,9 @@ tqdm>=4.66.1
 colorama>=0.4.6
 loguru>=0.7.2
 
+# HTTP client
+requests>=2.31.0
+
 # Testing
 pytest>=7.4.3
 pytest-cov>=4.1.0
-
-# HTTP client for API checks
-requests>=2.31.0
-
-# Ollama Python client
-ollama>=0.6.1
-

@@ -244,3 +244,392 @@ ImportError: cannot import name 'structure_detection_agent' from 'agents.structu
 2025-12-11 10:47:51,546 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
 2025-12-11 10:47:56,301 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
 2025-12-11 10:47:58,290 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:39:52,894 | INFO | Processing: ./sample_papers/1-s2.0-S2095495620306124-main.pdf
+2025-12-17 02:40:03,076 | ERROR | Failed to process ./sample_papers/1-s2.0-S2095495620306124-main.pdf: DeepSeek-OCR failed: [rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm/run_dpsk_ocr_pdf.py", line 32, in <module>
+[rank0]:     llm = LLM(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/utils.py", line 1161, in inner
+[rank0]:     return fn(*args, **kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/entrypoints/llm.py", line 247, in __init__
+[rank0]:     self.llm_engine = LLMEngine.from_engine_args(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 510, in from_engine_args
+[rank0]:     return engine_cls.from_vllm_config(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 486, in from_vllm_config
+[rank0]:     return cls(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 275, in __init__
+[rank0]:     self.model_executor = executor_class(vllm_config=vllm_config)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/executor_base.py", line 52, in __init__
+[rank0]:     self._init_executor()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/uniproc_executor.py", line 47, in _init_executor
+[rank0]:     self.collective_rpc("load_model")
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/uniproc_executor.py", line 56, in collective_rpc
+[rank0]:     answer = run_method(self.driver_worker, method, args, kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/utils.py", line 2456, in run_method
+[rank0]:     return func(*args, **kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/worker.py", line 203, in load_model
+[rank0]:     self.model_runner.load_model()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/model_runner.py", line 1111, in load_model
+[rank0]:     self.model = get_model(vllm_config=self.vllm_config)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/model_loader/__init__.py", line 14, in get_model
+[rank0]:     return loader.load_model(vllm_config=vllm_config)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/model_loader/loader.py", line 452, in load_model
+[rank0]:     model = _initialize_model(vllm_config=vllm_config)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/model_loader/loader.py", line 133, in _initialize_model
+[rank0]:     return model_class(vllm_config=vllm_config, prefix=prefix)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm/deepseek_ocr.py", line 321, in __init__
+[rank0]:     self.language_model = init_vllm_registered_model(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/utils.py", line 286, in init_vllm_registered_model
+[rank0]:     return _initialize_model(vllm_config=vllm_config, prefix=prefix)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/model_loader/loader.py", line 133, in _initialize_model
+[rank0]:     return model_class(vllm_config=vllm_config, prefix=prefix)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 447, in __init__
+[rank0]:     self.model = DeepseekModel(vllm_config=vllm_config,
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 348, in __init__
+[rank0]:     self.start_layer, self.end_layer, self.layers = make_layers(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/utils.py", line 609, in make_layers
+[rank0]:     [PPMissingLayer() for _ in range(start_layer)] + [
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/utils.py", line 610, in <listcomp>
+[rank0]:     maybe_offload_to_cpu(layer_fn(prefix=f"{prefix}.{idx}"))
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 350, in <lambda>
+[rank0]:     lambda prefix: DeepseekDecoderLayer(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 290, in __init__
+[rank0]:     self.mlp = DeepseekMoE(config=config,
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 119, in __init__
+[rank0]:     self.pack_params()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 149, in pack_params
+[rank0]:     self.w2 = torch._utils._flatten_dense_tensors(w2)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/torch/_utils.py", line 537, in _flatten_dense_tensors
+[rank0]:     return torch._C._nn.flatten_dense_tensors(tensors)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/torch/utils/_device.py", line 104, in __torch_function__
+[rank0]:     return func(*args, **kwargs)
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 140.00 MiB. GPU 0 has a total capacity of 39.38 GiB of which 46.06 MiB is free. Process 3758863 has 32.62 GiB memory in use. Including non-PyTorch memory, this process has 6.70 GiB memory in use. Of the allocated memory 5.91 GiB is allocated by PyTorch, and 319.19 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/home/nagasai/ExMatAI/main.py", line 150, in process_pdf
+    result = run_workflow(pdf_path, config_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/workflow/langgraph_workflow.py", line 94, in run_workflow
+    result = app.invoke(initial_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 3068, in invoke
+    for chunk in self.stream(
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 2643, in stream
+    for _ in runner.tick(
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 167, in tick
+    run_with_retry(
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/pregel/_retry.py", line 42, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/agents/ocr_agent.py", line 43, in ocr_agent
+    ocr_result = ocr_wrapper.process_pdf(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/utils/deepseek_ocr_wrapper.py", line 89, in process_pdf
+    raise RuntimeError(f"DeepSeek-OCR failed: {result.stderr}")
+RuntimeError: DeepSeek-OCR failed: [rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm/run_dpsk_ocr_pdf.py", line 32, in <module>
+[rank0]:     llm = LLM(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/utils.py", line 1161, in inner
+[rank0]:     return fn(*args, **kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/entrypoints/llm.py", line 247, in __init__
+[rank0]:     self.llm_engine = LLMEngine.from_engine_args(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 510, in from_engine_args
+[rank0]:     return engine_cls.from_vllm_config(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 486, in from_vllm_config
+[rank0]:     return cls(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 275, in __init__
+[rank0]:     self.model_executor = executor_class(vllm_config=vllm_config)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/executor_base.py", line 52, in __init__
+[rank0]:     self._init_executor()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/uniproc_executor.py", line 47, in _init_executor
+[rank0]:     self.collective_rpc("load_model")
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/uniproc_executor.py", line 56, in collective_rpc
+[rank0]:     answer = run_method(self.driver_worker, method, args, kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/utils.py", line 2456, in run_method
+[rank0]:     return func(*args, **kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/worker.py", line 203, in load_model
+[rank0]:     self.model_runner.load_model()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/model_runner.py", line 1111, in load_model
+[rank0]:     self.model = get_model(vllm_config=self.vllm_config)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/model_loader/__init__.py", line 14, in get_model
+[rank0]:     return loader.load_model(vllm_config=vllm_config)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/model_loader/loader.py", line 452, in load_model
+[rank0]:     model = _initialize_model(vllm_config=vllm_config)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/model_loader/loader.py", line 133, in _initialize_model
+[rank0]:     return model_class(vllm_config=vllm_config, prefix=prefix)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm/deepseek_ocr.py", line 321, in __init__
+[rank0]:     self.language_model = init_vllm_registered_model(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/utils.py", line 286, in init_vllm_registered_model
+[rank0]:     return _initialize_model(vllm_config=vllm_config, prefix=prefix)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/model_loader/loader.py", line 133, in _initialize_model
+[rank0]:     return model_class(vllm_config=vllm_config, prefix=prefix)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 447, in __init__
+[rank0]:     self.model = DeepseekModel(vllm_config=vllm_config,
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 348, in __init__
+[rank0]:     self.start_layer, self.end_layer, self.layers = make_layers(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/utils.py", line 609, in make_layers
+[rank0]:     [PPMissingLayer() for _ in range(start_layer)] + [
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/utils.py", line 610, in <listcomp>
+[rank0]:     maybe_offload_to_cpu(layer_fn(prefix=f"{prefix}.{idx}"))
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 350, in <lambda>
+[rank0]:     lambda prefix: DeepseekDecoderLayer(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 290, in __init__
+[rank0]:     self.mlp = DeepseekMoE(config=config,
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 119, in __init__
+[rank0]:     self.pack_params()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/model_executor/models/deepseek.py", line 149, in pack_params
+[rank0]:     self.w2 = torch._utils._flatten_dense_tensors(w2)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/torch/_utils.py", line 537, in _flatten_dense_tensors
+[rank0]:     return torch._C._nn.flatten_dense_tensors(tensors)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/torch/utils/_device.py", line 104, in __torch_function__
+[rank0]:     return func(*args, **kwargs)
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 140.00 MiB. GPU 0 has a total capacity of 39.38 GiB of which 46.06 MiB is free. Process 3758863 has 32.62 GiB memory in use. Including non-PyTorch memory, this process has 6.70 GiB memory in use. Of the allocated memory 5.91 GiB is allocated by PyTorch, and 319.19 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+During task with name 'ocr_agent' and id '9ba71925-8ecf-0907-ec1c-5093a54d0117'
+2025-12-17 02:40:34,788 | INFO | Processing: ./sample_papers/1-s2.0-S2095495620306124-main.pdf
+2025-12-17 02:45:51,691 | INFO | Processing: ./sample_papers/1-s2.0-S2095495620306124-main.pdf
+2025-12-17 02:46:49,312 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:46:59,771 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:47:13,697 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:47:26,283 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:47:37,024 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:47:45,453 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:47:50,805 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:47:52,050 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:47:53,353 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:48:02,509 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:48:15,919 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:48:31,310 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:48:32,670 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:48:39,798 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:51:03,982 | INFO | Processing: ./sample_papers/1-s2.0-S2095495620306124-main.pdf
+2025-12-17 02:51:22,394 | ERROR | Failed to process ./sample_papers/1-s2.0-S2095495620306124-main.pdf: DeepSeek-OCR failed: 
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.38it/s]
+
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.36it/s]
+
+Some kwargs in processor config are unused and will not have any effect: image_std, sft_format, image_token, add_special_token, candidate_resolutions, downsample_ratio, image_mean, patch_size, ignore_id, normalize, mask_prompt, pad_token. 
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm/run_dpsk_ocr_pdf.py", line 32, in <module>
+[rank0]:     llm = LLM(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/utils.py", line 1161, in inner
+[rank0]:     return fn(*args, **kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/entrypoints/llm.py", line 247, in __init__
+[rank0]:     self.llm_engine = LLMEngine.from_engine_args(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 510, in from_engine_args
+[rank0]:     return engine_cls.from_vllm_config(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 486, in from_vllm_config
+[rank0]:     return cls(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 278, in __init__
+[rank0]:     self._initialize_kv_caches()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 435, in _initialize_kv_caches
+[rank0]:     self.model_executor.initialize_cache(num_gpu_blocks, num_cpu_blocks)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/executor_base.py", line 123, in initialize_cache
+[rank0]:     self.collective_rpc("initialize_cache",
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/uniproc_executor.py", line 56, in collective_rpc
+[rank0]:     answer = run_method(self.driver_worker, method, args, kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/utils.py", line 2456, in run_method
+[rank0]:     return func(*args, **kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/worker.py", line 327, in initialize_cache
+[rank0]:     self._init_cache_engine()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/worker.py", line 332, in _init_cache_engine
+[rank0]:     self.cache_engine = [
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/worker.py", line 333, in <listcomp>
+[rank0]:     CacheEngine(self.cache_config, self.model_config,
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/cache_engine.py", line 64, in __init__
+[rank0]:     self.gpu_cache = self._allocate_kv_cache(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/cache_engine.py", line 95, in _allocate_kv_cache
+[rank0]:     layer_kv_cache = torch.zeros(
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.35 GiB. GPU 0 has a total capacity of 39.38 GiB of which 944.06 MiB is free. Process 1703084 has 5.76 GiB memory in use. Including non-PyTorch memory, this process has 32.68 GiB memory in use. Of the allocated memory 32.13 GiB is allocated by PyTorch, and 55.61 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/home/nagasai/ExMatAI/main.py", line 150, in process_pdf
+    result = run_workflow(pdf_path, config_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/workflow/langgraph_workflow.py", line 94, in run_workflow
+    result = app.invoke(initial_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 3068, in invoke
+    for chunk in self.stream(
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/pregel/main.py", line 2643, in stream
+    for _ in runner.tick(
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/pregel/_runner.py", line 167, in tick
+    run_with_retry(
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/pregel/_retry.py", line 42, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/.venv/lib/python3.11/site-packages/langgraph/_internal/_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/agents/ocr_agent.py", line 43, in ocr_agent
+    ocr_result = ocr_wrapper.process_pdf(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nagasai/ExMatAI/utils/deepseek_ocr_wrapper.py", line 89, in process_pdf
+    raise RuntimeError(f"DeepSeek-OCR failed: {result.stderr}")
+RuntimeError: DeepSeek-OCR failed: 
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.38it/s]
+
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.36it/s]
+
+Some kwargs in processor config are unused and will not have any effect: image_std, sft_format, image_token, add_special_token, candidate_resolutions, downsample_ratio, image_mean, patch_size, ignore_id, normalize, mask_prompt, pad_token. 
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm/run_dpsk_ocr_pdf.py", line 32, in <module>
+[rank0]:     llm = LLM(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/utils.py", line 1161, in inner
+[rank0]:     return fn(*args, **kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/entrypoints/llm.py", line 247, in __init__
+[rank0]:     self.llm_engine = LLMEngine.from_engine_args(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 510, in from_engine_args
+[rank0]:     return engine_cls.from_vllm_config(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 486, in from_vllm_config
+[rank0]:     return cls(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 278, in __init__
+[rank0]:     self._initialize_kv_caches()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/engine/llm_engine.py", line 435, in _initialize_kv_caches
+[rank0]:     self.model_executor.initialize_cache(num_gpu_blocks, num_cpu_blocks)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/executor_base.py", line 123, in initialize_cache
+[rank0]:     self.collective_rpc("initialize_cache",
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/executor/uniproc_executor.py", line 56, in collective_rpc
+[rank0]:     answer = run_method(self.driver_worker, method, args, kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/utils.py", line 2456, in run_method
+[rank0]:     return func(*args, **kwargs)
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/worker.py", line 327, in initialize_cache
+[rank0]:     self._init_cache_engine()
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/worker.py", line 332, in _init_cache_engine
+[rank0]:     self.cache_engine = [
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/worker.py", line 333, in <listcomp>
+[rank0]:     CacheEngine(self.cache_config, self.model_config,
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/cache_engine.py", line 64, in __init__
+[rank0]:     self.gpu_cache = self._allocate_kv_cache(
+[rank0]:   File "/home/nagasai/ExMatAI/DeepSeek-OCR/.venv/lib/python3.10/site-packages/vllm/worker/cache_engine.py", line 95, in _allocate_kv_cache
+[rank0]:     layer_kv_cache = torch.zeros(
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.35 GiB. GPU 0 has a total capacity of 39.38 GiB of which 944.06 MiB is free. Process 1703084 has 5.76 GiB memory in use. Including non-PyTorch memory, this process has 32.68 GiB memory in use. Of the allocated memory 32.13 GiB is allocated by PyTorch, and 55.61 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+During task with name 'ocr_agent' and id '23dd3205-b737-8269-f9fa-32a2ac4d4f02'
+2025-12-17 02:57:23,483 | INFO | Processing: ./sample_papers/1-s2.0-S2095495620306124-main.pdf
+2025-12-17 02:58:16,620 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:58:29,049 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:58:39,117 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:58:49,032 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:58:57,436 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:59:04,505 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:59:10,382 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:59:11,576 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:59:12,852 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:59:18,825 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 02:59:48,234 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:00:01,331 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:00:04,219 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:00:09,865 | INFO | vision_select_layer: -1
+2025-12-17 03:00:09,865 | INFO | ps_version: v2
+2025-12-17 03:00:09,865 | INFO | min_dynamic_patch: 1
+2025-12-17 03:00:09,865 | INFO | max_dynamic_patch: 12
+2025-12-17 03:07:12,776 | INFO | num_image_token: 256
+2025-12-17 03:07:12,777 | INFO | ps_version: v2
+2025-12-17 03:07:34,268 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 500 Internal Server Error"
+2025-12-17 03:07:40,765 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 500 Internal Server Error"
+2025-12-17 03:07:49,350 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 500 Internal Server Error"
+2025-12-17 03:07:55,844 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 500 Internal Server Error"
+2025-12-17 03:08:02,391 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 500 Internal Server Error"
+2025-12-17 03:08:08,608 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 500 Internal Server Error"
+2025-12-17 03:09:52,334 | INFO | Processing: ./sample_papers/1-s2.0-S2095495620306124-main.pdf
+2025-12-17 03:10:46,328 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:10:56,543 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:11:11,316 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:11:22,482 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:11:31,442 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:11:38,923 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:11:44,497 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:11:45,727 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:11:47,047 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:12:40,697 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:12:53,764 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:12:56,776 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:12:58,259 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:13:01,117 | INFO | vision_select_layer: -1
+2025-12-17 03:13:01,117 | INFO | ps_version: v2
+2025-12-17 03:13:01,117 | INFO | min_dynamic_patch: 1
+2025-12-17 03:13:01,117 | INFO | max_dynamic_patch: 12
+2025-12-17 03:13:01,519 | INFO | num_image_token: 256
+2025-12-17 03:13:01,519 | INFO | ps_version: v2
+2025-12-17 03:13:24,405 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:14:21,101 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:14:34,851 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:14:39,523 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:14:57,308 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:15:59,926 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:16:08,871 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:17:10,100 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:17:19,658 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:17:21,656 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:18:18,285 | INFO | Processing: ./sample_papers/1-s2.0-S2095495620306124-main.pdf
+2025-12-17 03:19:08,827 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:19:19,259 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:19:31,987 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:19:44,650 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:19:58,512 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:20:06,871 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:20:12,735 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:20:13,974 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:20:15,295 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:20:29,436 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:20:42,598 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:21:08,905 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:21:14,092 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:21:16,319 | INFO | vision_select_layer: -1
+2025-12-17 03:21:16,319 | INFO | ps_version: v2
+2025-12-17 03:21:16,320 | INFO | min_dynamic_patch: 1
+2025-12-17 03:21:16,320 | INFO | max_dynamic_patch: 12
+2025-12-17 03:21:16,690 | INFO | num_image_token: 256
+2025-12-17 03:21:16,690 | INFO | ps_version: v2
+2025-12-17 03:21:41,008 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:21:50,600 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:21:52,482 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:21:57,856 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:22:03,160 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:22:27,795 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:22:36,428 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:22:37,578 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:23:03,676 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 03:23:05,402 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:50:38,304 | INFO | Processing: ./sample_papers/1-s2.0-S2095495620306124-main.pdf
+2025-12-17 09:51:34,003 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:51:49,835 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:52:02,821 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:52:14,991 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:52:24,046 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:52:32,747 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:52:38,620 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:52:39,937 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:52:41,260 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:52:51,197 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:55:37,176 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:55:39,548 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:55:40,691 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 09:55:43,128 | INFO | vision_select_layer: -1
+2025-12-17 09:55:43,128 | INFO | ps_version: v2
+2025-12-17 09:55:43,128 | INFO | min_dynamic_patch: 1
+2025-12-17 09:55:43,128 | INFO | max_dynamic_patch: 12
+2025-12-17 09:55:43,521 | INFO | num_image_token: 256
+2025-12-17 09:55:43,521 | INFO | ps_version: v2
+2025-12-17 10:00:36,452 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:00:38,335 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:01:02,471 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:01:04,319 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:01:09,664 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:01:14,239 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:15:05,202 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:15:25,700 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:16:26,578 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:16:32,084 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+2025-12-17 10:16:33,316 | INFO | HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"

@@ -1,96 +1,104 @@
 """
-LangGraph Workflow - Complete 7-step pipeline
+LangGraph Workflow - ExMat AI Pipeline
+
+DAG:
+  ocr_node -> text_extract_node -> ┬-> plots_extract_node  ----------┬-> assembly_node -> END
+                                  └-> structure_smiles_node -> smiles_mapping_node -┘
 """
 
-from langgraph.graph import StateGraph, END
-from utils.state_schema import AgentState
+import os
+from pathlib import Path
 
-# Import all agents
-from agents.ocr_agent import ocr_agent
-from agents.text_analysis_agent import text_analysis_agent
-from agents.structure_extraction_agent import structure_extraction_agent
-from agents.smiles_generation_agent import smiles_generation_agent
-from agents.plots_analysis_agent import plots_analysis_agent
-from agents.experiment_assembly_agent import experiment_assembly_agent
-from agents.data_aggregation_agent import data_aggregation_agent
+from langgraph.graph import END, StateGraph
 
-def build_workflow():
-    """
-    Build the complete LangGraph workflow with all 7 agents
-    
-    Workflow:
-    1. OCR (DeepSeek-OCR)
-    2. Text Analysis (Qwen3:8b)
-    3. Structure Detection (MolDetV2) + Labeling (Qwen3-VL)
-    4. SMILES Generation (ChemVLM)
-    5. Plot Analysis (Qwen3-VL)
-    6. Experiment Assembly
-    7. Data Aggregation & Export
-    """
-    
-    # Create workflow graph
-    workflow = StateGraph(AgentState)
-    
-    # Add all agent nodes
-    workflow.add_node("ocr_agent", ocr_agent)
-    workflow.add_node("text_analysis", text_analysis_agent)
-    workflow.add_node("structure_extraction", structure_extraction_agent)
-    workflow.add_node("smiles_generation", smiles_generation_agent)
-    workflow.add_node("plots_analysis", plots_analysis_agent)
-    workflow.add_node("experiment_assembly", experiment_assembly_agent)
-    workflow.add_node("data_aggregation", data_aggregation_agent)
-    
-    # Define workflow edges (sequential pipeline)
-    workflow.set_entry_point("ocr_agent")
-    
-    workflow.add_edge("ocr_agent", "text_analysis")
-    workflow.add_edge("text_analysis", "structure_extraction")
-    workflow.add_edge("structure_extraction", "smiles_generation")
-    workflow.add_edge("smiles_generation", "plots_analysis")
-    workflow.add_edge("plots_analysis", "experiment_assembly")
-    workflow.add_edge("experiment_assembly", "data_aggregation")
-    workflow.add_edge("data_aggregation", END)
-    
+from agents.experiment_assembly_agent import assemble_final_json
+from agents.ocr_agent import run_deepseek_ocr
+from agents.plots_analysis_agent import process_plots
+from agents.smiles_mapping_agent import map_smiles_to_materials
+from agents.structure_extraction_agent import process_structures
+from agents.text_analysis_agent import extract_text_data
+from utils.state_schema import WorkflowState
+
+
+def build_workflow() -> StateGraph:
+    """Build and compile the LangGraph workflow."""
+
+    workflow = StateGraph(WorkflowState)
+
+    # -- Add Nodes -------------------------------------------------------
+    workflow.add_node("ocr_node", run_deepseek_ocr)
+    workflow.add_node("text_extract_node", extract_text_data)
+    workflow.add_node("plots_extract_node", process_plots)
+    workflow.add_node("structure_smiles_node", process_structures)
+    workflow.add_node("smiles_mapping_node", map_smiles_to_materials)
+    workflow.add_node("assembly_node", assemble_final_json)
+
+    # -- Define Edges ----------------------------------------------------
+    # Sequential: OCR -> Text Extraction
+    workflow.set_entry_point("ocr_node")
+    workflow.add_edge("ocr_node", "text_extract_node")
+
+    # Fan-out: Text Extraction -> (Plots ‖ Structures+SMILES)
+    workflow.add_edge("text_extract_node", "plots_extract_node")
+    workflow.add_edge("text_extract_node", "structure_smiles_node")
+
+    # Structure detection -> SMILES mapping
+    workflow.add_edge("structure_smiles_node", "smiles_mapping_node")
+
+    # Fan-in: Both branches -> Assembly
+    workflow.add_edge("plots_extract_node", "assembly_node")
+    workflow.add_edge("smiles_mapping_node", "assembly_node")
+
+    # Assembly -> END
+    workflow.add_edge("assembly_node", END)
+
     return workflow.compile()
 
-def run_workflow(pdf_path: str, config_path: str = None):
+
+def run_workflow(pdf_path: str, config_path: str = None) -> dict:
     """
-    Run the complete extraction workflow
-    
+    Run the complete ExMat AI extraction pipeline.
+
     Args:
-        pdf_path: Path to input PDF
-        config_path: Optional config file path
-        
+        pdf_path: Path to the input PDF file.
+        config_path: Optional path to config.yaml (unused for now).
+
     Returns:
-        Final state with all extracted data
+        Final state dict containing the extraction results.
     """
-    
-    # Build workflow
-    app = build_workflow()
-    
-    # Initial state
-    initial_state = {
-        "pdf_path": pdf_path,
-        "config_path": config_path,
-        "extracted_text": "",
-        "text_by_page": {},
-        "structure_images": [],
-        "plot_images": [],
-        "paper_info": {},
-        "identified_materials": [],
-        "detected_structures": [],
-        "material_smiles": {},
-        "cycling_data": [],
-        "voltage_data": [],
-        "battery_stacks": [],
-        "processing_params": {},
-        "experiments": [],
-        "errors": [],
-        "messages": [],
-        "current_agent": "ocr_agent"
+    pdf_name = Path(pdf_path).stem
+    output_dir = os.path.join("outputs", pdf_name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    initial_state: WorkflowState = {
+        "pdf_path": os.path.abspath(pdf_path),
+        "output_dir": os.path.abspath(output_dir),
+        # Placeholders - populated by nodes
+        "mmd_path": None,
+        "images_dir": None,
+        "experiments_data": [],
+        "figures_data": [],
+        "extracted_plot_data": {},
+        "structure_detections": [],
+        "raw_smiles": [],
+        "mapped_smiles": {},
+        "final_json": {},
+        "output_file": "",
     }
-    
-    # Run workflow
-    result = app.invoke(initial_state)
-    
-    return result
+
+    print("\n" + "=" * 70)
+    print("  ExMat AI: Starting LangGraph Pipeline")
+    print("=" * 70)
+    print(f"  PDF:    {pdf_path}")
+    print(f"  Output: {output_dir}")
+    print("=" * 70 + "\n")
+
+    graph = build_workflow()
+    final_state = graph.invoke(initial_state)
+
+    print("\n" + "=" * 70)
+    print("  Pipeline execution completed successfully.")
+    print(f"  Results saved to: {final_state.get('output_file', 'N/A')}")
+    print("=" * 70 + "\n")
+
+    return final_state

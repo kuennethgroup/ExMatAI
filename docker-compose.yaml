@@ -1,7 +1,8 @@
 services:
   ollama:
-    image: ollama/ollama:0.13.3-rc1
-    network_mode: host
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434" 
     volumes:
       - ollama-exmatai:/root/.ollama
       - ./ollama-pull.sh:/ollama-pull.sh

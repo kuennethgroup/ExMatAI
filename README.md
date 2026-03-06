@@ -1,6 +1,3 @@
-## README.md
-
-
 # ExMat AI - Automated Battery Material Data Extraction
 
 ExMat AI is an automated pipeline for extracting structured data from battery research papers. The system processes PDF documents and extracts key information including paper metadata, battery materials, chemical structures, SMILES representations, and performance data from plots.
@@ -11,74 +8,57 @@ Battery materials research papers contain valuable data scattered across text, f
 
 ## Architecture
 
-The pipeline consists of seven sequential agents, each handling a specific extraction task:
+The pipeline consists of six sequential agents, each handling a specific extraction task:
 
 ```mermaid
 graph TD;
     A[PDF Input] --> B[Agent 1: OCR & Document Analysis];
     B --> C[Agent 2: Text Analysis];
-    C --> D[Agent 3: Structure Detection & Labeling];
-    D --> E[Agent 4: SMILES Generation];
-    E --> F[Agent 5: Plot Data Extraction];
-    F --> G[Agent 6: Experiment Assembly];
-    G --> H[Agent 7: Data Aggregation];
-    H --> I[Structured JSON Output];
+    C --> D[Agent 3: Structure Extraction];
+    D --> E[Agent 4: SMILES Mapping];
+    C --> F[Agent 5: Plot Data Extraction];
+    D --> G[Agent 6: Experiment Assembly];
+    E --> G;
+    F --> G;
+    G --> H[Structured JSON Output];
     B -->|Text + Images| B1[DeepSeek-OCR];
-    C -->|Materials + Metadata| C1[Qwen3 8B Text Model];
+    C -->|Materials + Metadata| C1[Qwen3.5 35B];
     D -->|Bounding Boxes| D1[MolDetV2 YOLO];
-    D -->|Labels| D2[Qwen3-VL 8B Vision Model];
-    E -->|SMILES Strings| E1[ChemVLM 26B];
-    F -->|Performance Data| F1[Qwen3-VL 8B Vision Model];
+    D -->|SMILES Strings| D2[MolNexTR];
+    E -->|Mapping| E1[Qwen3-VL 32B];
+    F -->|Performance Data| F1[Qwen3-VL 32B];
 ```
 
 ### Detailed Workflow
 
 **Agent 1: OCR & Document Analysis**
-- Uses DeepSeek-OCR (vLLM-based) to extract text from all pages
-- Converts PDF pages to images using PyMuPDF
-- Classifies pages with Qwen3-VL to identify those containing chemical structures and plots
-- Output: Full text extraction, annotated page images
+- Uses DeepSeek-OCR to extract text from all pages
+- Output: Full .mmd text extraction, annotated page images
 
-**Agent 2: Text Analysis & Material Identification**
-- Processes extracted text with Qwen3 8B text model
-- Extracts paper metadata (DOI, title, authors, journal, year)
-- Identifies all battery materials and their roles (cathode, anode, electrolyte)
-- Extracts composition details and processing parameters
-- Constructs battery stacks by matching cathode-anode-electrolyte combinations
-- Output: Structured material data, battery configurations, processing conditions
+**Agent 2: Text Analysis**
+- Processes extracted text with Qwen3.5 35B
+- Extracts paper metadata and materials
+- Identifies battery configurations and processing conditions
+- Output: Structured material data and experiment conditions
 
-**Agent 3: Structure Detection & Labeling**
-- Runs MolDetV2 YOLO model on pages identified as containing structures
-- Detects bounding boxes around chemical structures
-- Expands detection region to capture text labels below or near structures
-- Uses Qwen3-VL to read and extract material names from label regions
-- Output: Cropped structure images with associated material names
-
-**Agent 4: SMILES Generation**
-- Loads ChemVLM 26B model for molecular structure recognition
-- Processes each detected structure image through ChemVLM
-- Generates SMILES (Simplified Molecular Input Line Entry System) strings
+**Agent 3: Structure Extraction**
+- Detects bounding boxes around chemical structures using MolDetv2 YOLO
+- Generates SMILES strings for cropped structures using MolNexTR
 - Validates SMILES strings using RDKit
-- Canonicalizes valid SMILES for consistency
-- Output: Material name to SMILES mapping with confidence scores
+- Output: Cropped structure images with generated SMILES strings
 
-**Agent 5: Plot Data Extraction**
-- Classifies plots by type (capacity vs cycle, voltage profile, rate capability)
-- Extracts numerical data points from each plot using Qwen3-VL
-- Attempts to extract all visible data points for maximum fidelity
-- Output: Structured arrays of cycling data and voltage profiles
+**Agent 4: SMILES Mapping**
+- Uses Qwen3-VL 32B to map detected structures to the text-extracted material names
+- Output: Material name to SMILES string mapping
+
+**Agent 5: Plots Analysis**
+- Crops sub-panels using `figpanel`
+- Extracts numerical data points from capacity and voltage plots using Qwen3-VL 32B
+- Output: Structured CSV datasets of cycling data and voltage profiles
 
 **Agent 6: Experiment Assembly**
-- Matches materials with their corresponding SMILES strings
-- Associates performance data with battery stacks
-- Creates complete experiment records linking materials, structures, and performance
-- Output: Unified experiment objects
-
-**Agent 7: Data Aggregation & Export**
-- Compiles all extracted information into a standardized JSON format
-- Adds extraction metadata and model information
-- Saves to output directory with detailed logging
-- Output: Final structured JSON file
+- Compiles texts, mapped SMILES, and plot data into a standardized JSON format
+- Output: Final structured JSON file with extraction metadata
 
 ## Installation
 
@@ -136,7 +116,7 @@ Wait for models to download (first run takes 10-15 minutes):
 docker logs -f ollama-exmatai
 ```
 
-You should see models being pulled: qwen3:8b, qwen3-vl:8b
+You should see models being pulled: qwen3.5:35b, qwen3-vl:32b
 
 #### Step 5: Verify Installation
 
@@ -152,8 +132,8 @@ Testing Ollama Connection
 Host: http://localhost:11434
 
 Available models:
-  - qwen3:8b
-  - qwen3-vl:8b
+  - qwen3.5:35b
+  - qwen3-vl:32b
 
 Testing model generation...
 Response: Hello from Docker Ollama!
@@ -168,27 +148,25 @@ ExMatAI/
 ├── agents/
 │   ├── ocr_agent.py                    # Agent 1: OCR
 │   ├── text_analysis_agent.py          # Agent 2: Text extraction
-│   ├── structure_extraction_agent.py   # Agent 3: Structure detection
-│   ├── smiles_generation_agent.py      # Agent 4: SMILES generation
-│   ├── plots_analysis_agent.py         # Agent 5: Plot analysis
-│   ├── experiment_assembly_agent.py    # Agent 6: Data matching
-│   └── data_aggregation_agent.py       # Agent 7: Final export
+│   ├── plots_analysis_agent.py         # Agent 3: Plot analysis
+│   ├── structure_extraction_agent.py   # Agent 4: Structure detection
+│   ├── smiles_mapping_agent.py         # Agent 5: SMILES mapping
+│   ├── experiment_assembly_agent.py    # Agent 6: Final export
+│   └── __init__.py                     
 ├── utils/
 │   ├── state_schema.py                 # LangGraph state definition
-│   ├── deepseek_ocr_wrapper.py         # DeepSeek-OCR interface
-│   ├── chemvlm_wrapper.py              # ChemVLM interface
-│   ├── config_manager.py               # Configuration handling
-│   └── text_processing.py              # Text utilities
+│   └── __init__.py
 ├── workflow/
 │   └── langgraph_workflow.py           # LangGraph orchestration
 ├── DeepSeek-OCR/                       # Isolated OCR environment
-├── models/                             # Model cache directory
 ├── outputs/                            # Extracted JSON results
-├── temp/                               # Temporary processing files
 ├── logs/                               # Execution logs
 ├── docker-compose.yml                  # Ollama configuration
 ├── ollama-pull.sh                      # Ollama startup script
+├── setup_environments.sh               # Environment building script
+├── config.yaml                         # Project configuration file
 ├── main.py                             # Entry point
+├── pyproject.toml                      # Project metadata and dependencies
 └── requirements.txt                    # Python dependencies
 ```
 
@@ -218,63 +196,69 @@ python main.py --pdf paper.pdf --config custom_config.yaml
 
 Results are saved to `outputs/{pdf_name}_extracted.json`:
 
-```
+```json
 {
-  "paper_info": {
-    "doi": "10.1016/j.xxx",
-    "title": "Paper title",
-    "authors": ["Author 1", "Author 2"],
-    "journal": "Journal Name",
-    "year": 2024
-  },
-  "materials": {
-    "identified_materials": [
-      {
-        "material_name": "Prussian blue",
-        "role": "cathode",
-        "chemical_formula": "KFe[Fe(CN)6]"
-      }
-    ],
-    "material_smiles": {
-      "Prussian blue": {
-        "smiles": "C#N.C#N.C#N.C#N.C#N.C#N.[Fe].[Fe].[K]",
-        "page": 2,
-        "confidence": 0.95
-      }
-    }
+  "paper_name": "nenergy201774",
+  "extraction_metadata": {
+    "extraction_date": "2026-03-05T19:29:25.398477",
+    "pdf_path": "/path/to/sample_papers/nenergy201774.pdf",
+    "models_used": {
+      "ocr": "DeepSeek-OCR (vLLM)",
+      "text_llm": "qwen3.5:35b",
+      "vision_llm": "qwen3-vl:32b",
+      "structure_detection": "UniParser/MolDetv2",
+      "smiles_generation": "MolNexTR"
+    },
+    "total_experiments": 2,
+    "total_smiles_mapped": 1,
+    "total_plots_extracted": 2
   },
   "experiments": [
     {
-      "experiment_id": 1,
-      "materials": {
-        "cathode": {"name": "Prussian blue", "formula": "KFe[Fe(CN)6]"},
-        "anode": {"name": "PTCDI", "formula": "C24H8N2O8"},
-        "electrolyte": [{"name": "KCl", "formula": "KCl"}]
-      },
-      "smiles": {
-        "cathode": "...",
-        "anode": "..."
-      },
-      "processing_conditions": {
-        "current_density_mA_g": 400,
-        "voltage_range_V": "1.2-3.9",
-        "temperature_C": 25,
-        "cycle_life": 10000
-      },
-      "performance_data": {
-        "cycling": {
-          "data": [
-            {"cycle": 1, "capacity_mAh_g": 395},
-            {"cycle": 100, "capacity_mAh_g": 385}
-          ]
-        },
-        "voltage_profile": {
-          "data": [
-            {"capacity_mAh_g": 0, "voltage_V": 3.5},
-            {"capacity_mAh_g": 100, "voltage_V": 3.2}
-          ]
+      "Subtype": "Positive",
+      "Type_of_battery": "Half-cell",
+      "Battery_type": "Lithium-ion",
+      "Material_Name_Negative": "Lithium metal",
+      "Material_Name_Positive": "diquinoxalinylene (2Q)",
+      "wt_percent_active_material": "30",
+      "conductive_material": "graphene",
+      "wt_percent_conductive_mat": "60",
+      "binder": "PVDF",
+      "wt_percent_binder": "10",
+      "Electrolyte": "1.0 mol L-1 LiTFSI in DOL/DME",
+      "Cell_setup": "2016-type coin cell",
+      "Temperature": "Ambient temperature",
+      "Reported_C_rate": "400 mA g-1 (1C)",
+      "Reported_Specific_Capacity": "~372 mAh g-1",
+      "Max_Reported_Cycles": 10000,
+      "Cycle_Data_Figure": [
+        "Fig. 3g"
+      ],
+      "Voltage_Profile_Figure": [
+        "Fig. 3a"
+      ],
+      "SMILES_Negative": null,
+      "SMILES_Positive": "C1=CC2=C(C=C1)N=C(C(=N2)C3=NC4=CC=CC=C4N=C3)C5=NC6=CC=CC=C6N=C5",
+      "Cycle_Data": [
+        {
+          "figure": "Fig. 3g",
+          "csv_path": "outputs/nenergy201774/plots/fig3_g_data.csv",
+          "axis_metadata": {
+            "x_axis_label": "Cycle Number",
+            "y_axis_label": "Discharge Capacity (mAh g-1)"
+          }
         }
-      }
+      ],
+      "Voltage_Profile_Data": [
+        {
+          "figure": "Fig. 3a",
+          "csv_path": "outputs/nenergy201774/plots/fig3_a_data.csv",
+          "axis_metadata": {
+            "x_axis_label": "Capacity (mAh g-1)",
+            "y_axis_label": "Voltage (V)"
+          }
+        }
+      ]
     }
   ]
 }
@@ -287,15 +271,15 @@ Results are saved to `outputs/{pdf_name}_extracted.json`:
 - **PyMuPDF**: PDF to image conversion (no system dependencies)
 
 ### Text Analysis
-- **Qwen3 8B**: Alibaba's text model for material extraction and metadata parsing
+- **Qwen3.5 35B**: Alibaba's text model for material extraction and metadata parsing
 - Runs via Ollama in Docker for easy deployment
 
 ### Computer Vision
-- **Qwen3-VL 8B**: Vision-language model for image classification and text extraction from figures
+- **Qwen3-VL 32B**: Vision-language model for image classification and text extraction from figures
 - **MolDetV2**: YOLO-based molecular structure detector from UniParser
 
 ### Chemistry
-- **ChemVLM 26B**: Specialized vision-language model for chemical structure recognition
+- **MolNexTR**: Specialized model for chemical structure recognition and SMILES generation
 - **RDKit**: Chemistry toolkit for SMILES validation and canonicalization
 
 ### Orchestration
@@ -349,7 +333,7 @@ services:
 Models are automatically downloaded and cached:
 
 - **Ollama models**: `~/.ollama/models/`
-- **HuggingFace models**: `models/chemvlm/`, `models/moldetv2/`
+- **HuggingFace models**: `models/moldetv2/`
 - **DeepSeek-OCR**: `DeepSeek-OCR/.venv/`
 
 ## Troubleshooting
@@ -370,13 +354,9 @@ docker logs ollama-exmatai
 curl http://localhost:11434/api/version
 ```
 
-### ChemVLM Out of Memory
+### MolNexTR Errors
 
-The ChemVLM model requires ~52GB of VRAM. If you encounter OOM errors:
-
-1. Reduce batch size in code
-2. Use model quantization (add to chemvlm_wrapper.py)
-3. Process structures sequentially instead of in batches
+Ensure MolNexTR dependencies are correctly installed via the setup script. Out-of-memory errors are much less likely with MolNexTR compared to older models, but if needed due to system limits, consider reducing batch processing.
 
 ### MolDetV2 Not Detecting Structures
 
@@ -404,13 +384,13 @@ python --version  # Should show Python 3.10.x
 
 Typical processing times on NVIDIA A100 40GB:
 
-- OCR (10 pages): 30-60 seconds
-- Text analysis: 5-10 seconds
-- Structure detection (6 structures): 20-30 seconds
-- SMILES generation: 10-15 seconds per structure
-- Plot analysis (6 plots): 40-60 seconds
+- OCR (10 pages): 1-2 minutes
+- Text analysis (Qwen3.5 35B): 1-2 minutes
+- Structure detection & SMILES generation: 10-20 seconds
+- Plot analysis: 20-30 seconds per plot
+- SMILES Mapping (Vision LLM): ~30 seconds
 
-Total: ~3-5 minutes per paper
+Total: ~5-10 minutes per paper (depending on the number of plots and structures)
 
 ## Limitations
 
@@ -440,6 +420,6 @@ This project builds on several excellent open-source projects:
 - DeepSeek-OCR team for the OCR model
 - Alibaba Cloud for Qwen3 models
 - UniParser team for MolDetV2
-- AI4Chem team for ChemVLM
 - LangChain team for LangGraph framework
+- Plottie team for figpanel model
 

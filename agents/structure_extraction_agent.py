@@ -1,173 +1,231 @@
 """
-Structure Extraction Agent - Detect chemical structures using MolDetV2 and label them
+Structure Extraction Agent - Detect Structures + Generate SMILES
+Absorbs logic from modules/structures_det.py and modules/smiles_gen.py.
+
+Pipeline:
+  1. Filter images that contain chemical structure references (from experiments_data)
+  2. Run MolDetv2 (YOLO) to detect structure bounding boxes
+  3. Crop each detected region
+  4. Run MolNexTR on each crop to generate SMILES strings
+  5. Return structure_detections and raw_smiles to state
 """
 
 import os
+import re
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import cv2
 from huggingface_hub import hf_hub_download
-from ultralytics import YOLO
 from PIL import Image
-import ollama
-from typing import Dict, List
-from dotenv import load_dotenv
+from ultralytics import YOLO
 
-load_dotenv()
+from utils.state_schema import WorkflowState
 
-from utils.state_schema import AgentState
+# =======================================================================
+# Helpers
+# =======================================================================
 
-# Configure Ollama client
-OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
-client = ollama.Client(host=OLLAMA_HOST)
+_model_cache: Optional[YOLO] = None
 
-def structure_extraction_agent(state: AgentState) -> AgentState:
-    """
-    Detect chemical structures using MolDetV2 and label them with qwen3-vl
-    """
-    print("\n" + "="*80)
-    print("🔬 AGENT 3: Chemical Structure Detection & Labeling")
-    print("="*80)
-    
-    structure_images = state.get('structure_images', [])
-    
-    if not structure_images:
-        print("\n⚠️  No structure images to process - skipping")
-        return {
-            **state,
-            "detected_structures": [],
-            "messages": state.get('messages', []) + ["No structures to detect"],
-            "current_agent": "smiles_generation"
-        }
-    
-    print(f"\n📊 Processing {len(structure_images)} images with MolDetV2...")
-    
-    # Load MolDetV2 model (auto-downloads from HuggingFace)
-    try:
-        print(f"  ├─ Loading MolDetV2 model...")
-        
+
+def _get_yolo_model() -> YOLO:
+    """Download & cache the MolDetv2 YOLO model."""
+    global _model_cache
+    if _model_cache is None:
         model_path = hf_hub_download(
             repo_id="UniParser/MolDetv2",
             filename="moldet_v2_yolo11n_640_general.pt",
             repo_type="model",
-            cache_dir="models/moldetv2"
         )
-        
-        print(f"  │  ├─ Model cached at: {model_path}")
-        
-        model = YOLO(model_path)
-        print(f"  ✓ MolDetV2 loaded successfully")
-        
-    except Exception as e:
-        print(f"  ✗ Failed to load MolDetV2: {e}")
-        return {
-            **state,
-            "detected_structures": [],
-            "errors": state.get('errors', []) + [f"MolDetV2 loading failed: {e}"],
-            "messages": state.get('messages', []) + ["Structure detection failed"],
-            "current_agent": "smiles_generation"
-        }
-    
-    detected_structures = []
-    
-    for idx, struct_img in enumerate(structure_images, 1):
-        print(f"\n  ├─ Processing image {idx}/{len(structure_images)} (page {struct_img['page']})...")
-        
-        try:
-            # Save image temporarily
-            temp_path = f"temp/struct_detect_p{struct_img['page']}_{idx}.png"
-            struct_img['image'].save(temp_path)
-            
-            # Run MolDetV2 detection
+        _model_cache = YOLO(model_path)
+    return _model_cache
+
+
+def _extract_fig_number(ref: str) -> Optional[str]:
+    """Extract the numeric part from any figure reference variant."""
+    m = re.search(r'(?:Fig(?:ure|\.)?)\s*(\d+)', ref, re.IGNORECASE)
+    return m.group(1) if m else None
+
+
+def _normalize_fig_ref(ref: Optional[str]):
+    """Normalize any figure reference to (number, sub_label)."""
+    if not ref:
+        return None
+    m = re.match(r'(?:Fig(?:ure|\.)?)\s*(\d+)\s*([a-zA-Z])?', ref.strip(), re.IGNORECASE)
+    if m:
+        return m.group(1), (m.group(2) or "").lower()
+    return None
+
+
+def _find_image_for_figure(fig_number: str, figures_data: list, images_dir: str) -> Optional[str]:
+    """Given a figure number (e.g. '3'), find the matching image path."""
+    for fig in figures_data:
+        fig_num = _extract_fig_number(fig["Figure_ID"])
+        if fig_num == fig_number:
+            rel_path = fig["Image_Path"]
+            img_name = os.path.basename(rel_path)
+            full_path = os.path.join(images_dir, img_name)
+            if os.path.exists(full_path):
+                return full_path
+            alt = os.path.join(os.path.dirname(images_dir), rel_path.lstrip("./"))
+            if os.path.exists(alt):
+                return alt
+    return None
+
+
+# =======================================================================
+# LangGraph Node
+# =======================================================================
+
+def process_structures(state: WorkflowState) -> WorkflowState:
+    """LangGraph node: detect chemical structures and generate SMILES."""
+    print("\n" + "=" * 70)
+    print("Step 4: Detecting chemical structures and generating SMILES")
+    print("=" * 70)
+
+    experiments_data = state["experiments_data"]
+    figures_data = state["figures_data"]
+    images_dir = state["images_dir"]
+    output_dir = state["output_dir"]
+
+    structures_dir = os.path.join(output_dir, "structures")
+    os.makedirs(structures_dir, exist_ok=True)
+
+    # -- 1. Collect structure figure references from experiments ---------
+    target_refs: Dict[str, List[str]] = {}
+    for exp in experiments_data:
+        for key in ("Structure_Figure_Negative", "Structure_Figure_Positive"):
+            ref = exp.get(key)
+            parsed = _normalize_fig_ref(ref)
+            if parsed:
+                fig_number, sub_label = parsed
+                target_refs.setdefault(fig_number, [])
+                if sub_label and sub_label not in target_refs[fig_number]:
+                    target_refs[fig_number].append(sub_label)
+
+    print(f"  Identified structure figures to process: {list(target_refs.keys())}")
+
+    if not target_refs:
+        print("  No chemical structures explicitly identified in metadata text.")
+        print("  FALLBACK: Scanning all document images with MolDetV2 for orphaned structures...")
+        for fig in figures_data:
+             fig_num = _extract_fig_number(fig["Figure_ID"])
+             if fig_num:
+                 target_refs.setdefault(fig_num, [])
+
+    # -- 2. Load YOLO model ---------------------------------------------
+    print("  Loading MolDetv2 object detection model...")
+    model = _get_yolo_model()
+
+    structure_detections: List[Dict] = []
+    raw_smiles: List[Dict] = []
+
+    # -- 3. Process each target figure ----------------------------------
+    for fig_id, sub_labels in target_refs.items():
+        img_path = _find_image_for_figure(fig_id, figures_data, images_dir)
+        if not img_path:
+            print(f"  Could not find image file for {fig_id}")
+            continue
+
+        print(f"  Processing structure annotations in {fig_id} ({img_path})...")
+
+        # If sub-labels, try figpanel first
+        images_to_process = []
+        if sub_labels:
+            try:
+                import figpanel
+                panels = figpanel.extract(img_path, output_dir=None)
+                for panel in panels:
+                    panel_label = (panel.label or "").lower()
+                    if panel_label in sub_labels:
+                        crop_path = os.path.join(structures_dir, f"{fig_id.replace(' ', '_')}_{panel_label}_panel.png")
+                        panel.image.save(crop_path)
+                        images_to_process.append((f"{fig_id}{panel_label}", crop_path))
+            except Exception as e:
+                print(f"  figpanel cropping failed ({e}), defaulting to full image processing.")
+                images_to_process.append((fig_id, img_path))
+        else:
+            images_to_process.append((fig_id, img_path))
+
+        for ref_tag, proc_img_path in images_to_process:
+            # -- YOLO Detection -----------------------------------------
             results = model.predict(
-                temp_path,
-                save=False,
+                proc_img_path,
+                save=True,
+                project=structures_dir,
+                name=ref_tag.replace(" ", "_").replace(".", ""),
                 imgsz=640,
                 conf=0.5,
-                device=0  # GPU
+                device=0,
             )
-            
-            if len(results) > 0 and len(results[0].boxes) > 0:
-                print(f"  │  ✓ Found {len(results[0].boxes)} structure(s)")
-                
-                # Process each detected structure
-                for box_idx, box in enumerate(results[0].boxes):
-                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                    
-                    # Crop structure
-                    structure_crop = struct_img['image'].crop((int(x1), int(y1), int(x2), int(y2)))
-                    
-                    # Expand bbox downward to capture label
-                    img_width, img_height = struct_img['image'].size
-                    label_y1 = int(y2)
-                    label_y2 = min(int(y2) + 150, img_height)  # Expand 150px down
-                    label_region = struct_img['image'].crop((int(x1), label_y1, int(x2), label_y2))
-                    
-                    # Save crops
-                    crop_path = f"temp/structure_p{struct_img['page']}_{idx}_{box_idx}.png"
-                    structure_crop.save(crop_path)
-                    
-                    label_path = f"temp/label_region_p{struct_img['page']}_{idx}_{box_idx}.png"
-                    label_region.save(label_path)
-                    
-                    # Use qwen3-vl to extract label text
+
+            boxes = []
+            smiles_list = []
+            original_img = cv2.imread(proc_img_path)
+
+            for r in results:
+                for i, box in enumerate(r.boxes):
+                    x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+                    conf = float(box.conf[0])
+                    boxes.append({"x1": x1, "y1": y1, "x2": x2, "y2": y2, "confidence": conf})
+
+                    # -- Crop & generate SMILES -------------------------
+                    crop = original_img[y1:y2, x1:x2]
+                    crop_path = os.path.join(structures_dir, f"{ref_tag.replace(' ', '_')}_struct_{i}.png")
+                    cv2.imwrite(crop_path, crop)
+
                     try:
-                        label_response = client.generate(
-                            model='qwen3-vl:8b',
-                            prompt="What is the chemical compound name or label shown in this image? Return only the name/label, nothing else.",
-                            images=[label_path]
-                        )
-                        
-                        material_name = label_response['response'].strip()
-                        
-                        # If no label found below, check near the structure
-                        if not material_name or len(material_name) < 2:
-                            # Expand bbox in all directions
-                            expand_x1 = max(0, int(x1) - 100)
-                            expand_y1 = max(0, int(y1) - 100)
-                            expand_x2 = min(img_width, int(x2) + 100)
-                            expand_y2 = min(img_height, int(y2) + 100)
-                            
-                            near_region = struct_img['image'].crop((expand_x1, expand_y1, expand_x2, expand_y2))
-                            near_path = f"temp/near_region_p{struct_img['page']}_{idx}_{box_idx}.png"
-                            near_region.save(near_path)
-                            
-                            near_response = client.generate(
-                                model='qwen3-vl:8b',
-                                prompt="What is the chemical compound name or label near this structure? Return only the name/label.",
-                                images=[near_path]
-                            )
-                            
-                            material_name = near_response['response'].strip()
-                        
-                        print(f"  │    • Structure {box_idx + 1}: '{material_name}' (conf: {float(box.conf[0]):.2f})")
-                        
+                        import MolNexTR
+                        from rdkit import Chem
+
+                        preds = MolNexTR.get_predictions(crop_path, smiles=True)
+                        smiles = preds.get("predicted_smiles", "")
+
+                        # Validate SMILES with RDKit
+                        if smiles and isinstance(smiles, str) and smiles.strip():
+                            mol = Chem.MolFromSmiles(smiles)
+                            if mol is not None:
+                                smiles_list.append({"crop_path": crop_path, "smiles": smiles, "box": boxes[-1]})
+                                print(f"  Valid SMILES for {ref_tag} (structure {i}): {smiles[:60]}..." if len(smiles) > 60 else f"  Valid SMILES for {ref_tag} (structure {i}): {smiles}")
+                            else:
+                                print(f"  Invalid SMILES generated for {ref_tag} (structure {i}), discarding.")
+                                smiles_list.append({"crop_path": crop_path, "smiles": "", "box": boxes[-1]})
+                        else:
+                            print(f"  MolNexTR failed to generate SMILES for {ref_tag} (structure {i}).")
+                            smiles_list.append({"crop_path": crop_path, "smiles": "", "box": boxes[-1]})
+
                     except Exception as e:
-                        print(f"  │    ⚠️  Label extraction failed: {e}")
-                        material_name = f"Unknown_{struct_img['page']}_{box_idx}"
-                    
-                    detected_structures.append({
-                        'page': struct_img['page'],
-                        'bbox': [float(x1), float(y1), float(x2), float(y2)],
-                        'confidence': float(box.conf[0]),
-                        'image_path': crop_path,
-                        'image': structure_crop,
-                        'material_name': material_name,
-                        'nearby_text': struct_img.get('nearby_text', '')
-                    })
-            else:
-                print(f"  │  ⚠️  No structures detected")
-                
-        except Exception as e:
-            print(f"  │  ✗ Detection failed: {e}")
-            state['errors'].append(f"Structure detection failed for page {struct_img['page']}: {e}")
-    
-    print(f"\n" + "="*80)
-    print(f"✅ Structure Detection Complete:")
-    print(f"  ├─ Images processed: {len(structure_images)}")
-    print(f"  └─ Structures detected & labeled: {len(detected_structures)}")
-    print("="*80)
-    
+                        print(f"  SMILES generation failed for structure {i}: {e}")
+                        smiles_list.append({"crop_path": crop_path, "smiles": "", "box": boxes[-1]})
+
+            # Save annotated image path (YOLO saves automatically)
+            annotated_dir = os.path.join(structures_dir, ref_tag.replace(" ", "_").replace(".", ""))
+            annotated_path = ""
+            if os.path.isdir(annotated_dir):
+                annotated_files = list(Path(annotated_dir).glob("*.jpg")) + list(Path(annotated_dir).glob("*.png"))
+                if annotated_files:
+                    annotated_path = str(annotated_files[0])
+
+            structure_detections.append({
+                "ref_tag": ref_tag,
+                "original_image": img_path,
+                "processed_image": proc_img_path,
+                "annotated_image": annotated_path,
+                "boxes": boxes,
+            })
+
+            raw_smiles.append({
+                "ref_tag": ref_tag,
+                "image_path": proc_img_path,
+                "smiles_list": smiles_list,
+            })
+
+    total_smiles = sum(len(s['smiles_list']) for s in raw_smiles)
+    valid_smiles = sum(1 for s in raw_smiles for entry in s['smiles_list'] if entry.get('smiles'))
+    print(f"  Finished processing: Detected {len(structure_detections)} total chemical structures and successfully validated {valid_smiles}/{total_smiles} SMILES strings.")
+
     return {
-        **state,
-        "detected_structures": detected_structures,
-        "messages": state.get('messages', []) + ["Structure detection completed"],
-        "current_agent": "smiles_generation"
+        "structure_detections": structure_detections,
+        "raw_smiles": raw_smiles,
     }
