@@ -45,15 +45,13 @@ def build_workflow() -> StateGraph:
     # Structure detection -> SMILES mapping
     workflow.add_edge("structure_smiles_node", "smiles_mapping_node")
 
-    # Fan-in: Both branches -> Assembly
-    workflow.add_edge("plots_extract_node", "assembly_node")
-    workflow.add_edge("smiles_mapping_node", "assembly_node")
+    # Fan-in: Assembly node only runs after BOTH plots and smiles are done
+    workflow.add_edge(["plots_extract_node", "smiles_mapping_node"], "assembly_node")
 
     # Assembly -> END
     workflow.add_edge("assembly_node", END)
 
     return workflow.compile()
-
 
 def run_workflow(pdf_path: str, config_path: str = None) -> dict:
     """

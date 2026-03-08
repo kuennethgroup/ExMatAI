@@ -9,6 +9,7 @@ old
 DeepSeek-OCR
 sample_papers
 sample_outputs
+sample_thesis
 outputs
 outputs_old
 outputs_old_2
@@ -17,6 +18,8 @@ temp
 resources
 models
 logs
+thesis_outline.md
+workflow.md
 
 # Virtual environments
 .venv

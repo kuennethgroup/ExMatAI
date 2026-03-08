@@ -237,15 +237,27 @@ Format EXACTLY like this example:
 # Helpers
 # =======================================================================
 
-_PLOT_KEYWORDS = [
-    "capacity vs cycle", "capacity vs. cycle",
-    "specific capacity vs cycle", "specific capacity vs. cycle",
-    "capacity vs voltage", "capacity vs. voltage",
-    "specific capacity vs voltage", "specific capacity vs. voltage",
-    "cycling", "cycle number", "voltage profile",
-    "charge-discharge", "charge/discharge",
-    "coulombic efficiency",
+_EXPLICIT_PLOT_PHRASES = [
+    "voltage profile", "charge-discharge", "charge/discharge", "galvanostatic",
+    "rate performance", "rate capability", "cycling performance",
+    "cycle stability", "cyclic performance", "capacity retention",
+    "cv curves", "cyclic voltammetry"
 ]
+
+_Y_KEYWORDS = ["capacity", "coulombic", "energy density", "power density"]
+_X_KEYWORDS = ["voltage", "cycle", "current density", "c-rate", "rate"]
+
+def _is_relevant_plot_text(text: str) -> bool:
+    text_lower = text.lower()
+    if any(phrase in text_lower for phrase in _EXPLICIT_PLOT_PHRASES):
+        return True
+    
+    has_y = any(kw in text_lower for kw in _Y_KEYWORDS)
+    # Match specific words for X-axis: 
+    # re.search ensures that 'v' isn't just part of a word like 'curve'
+    has_x = any(kw in text_lower for kw in _X_KEYWORDS) or re.search(r'\bv\b', text_lower)
+    
+    return has_y and has_x
 
 
 def _extract_fig_number(ref: str) -> Optional[str]:
@@ -322,13 +334,32 @@ def process_plots(state: WorkflowState) -> WorkflowState:
                     if sub_label and sub_label not in target_refs[fig_number]:
                         target_refs[fig_number].append(sub_label)
 
-    # Also keyword-match captions
+    # Also keyword-match captions AND document text context
+    full_text = ""
+    if state.get("mmd_path") and os.path.exists(state["mmd_path"]):
+        with open(state["mmd_path"], "r", encoding="utf-8") as f:
+            full_text = f.read()
+
     for fig in figures_data:
-        caption_lower = fig.get("Caption", "").lower()
-        if any(kw in caption_lower for kw in _PLOT_KEYWORDS):
-            fig_num = _extract_fig_number(fig["Figure_ID"])
-            if fig_num and fig_num not in target_refs:
-                target_refs[fig_num] = []
+        caption = fig.get("Caption", "")
+        fig_num = _extract_fig_number(fig["Figure_ID"])
+        if not fig_num: continue
+        
+        kw_found = False
+        if _is_relevant_plot_text(caption):
+            kw_found = True
+        elif full_text:
+            # Check surrounding text in the paper (e.g. 250 chars before and after mention)
+            for mention in re.finditer(r'fig(?:ure|\.)?\s*' + str(fig_num) + r'\b', full_text, re.IGNORECASE):
+                start = max(0, mention.start() - 250)
+                end = min(len(full_text), mention.end() + 250)
+                context = full_text[start:end]
+                if _is_relevant_plot_text(context):
+                    kw_found = True
+                    break
+                    
+        if kw_found and fig_num not in target_refs:
+            target_refs[fig_num] = []
 
     print(f"  Identified plots to extract: {list(target_refs.keys())}")
 

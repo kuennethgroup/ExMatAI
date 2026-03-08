@@ -295,12 +295,9 @@ def _filter_methods_section(methods_text: str) -> str:
     return "\n\n".join(relevant)
 
 
-def _build_prioritized_text(sections: dict, max_chars: int = 25000) -> str:
-    """Build LLM input text with Methods/Experimental first, then Results,
-    then Abstract/Intro. Stays under max_chars to fit context window.
-
-    Methods section is sub-filtered to only include electrode/electrolyte
-    relevant paragraphs (drops NMR, DFT, morphology details).
+def _build_prioritized_text(sections: dict, max_chars: int = 120000) -> str:
+    """Build LLM input text maintaining high information density,
+    staying under max_chars to fit context window.
     """
     blocks: list[str] = []
     used_keys: set[str] = set()
@@ -318,15 +315,21 @@ def _build_prioritized_text(sections: dict, max_chars: int = 25000) -> str:
             if any(skip in heading_key for skip in _SKIP_HEADINGS):
                 continue
             if any(kw in heading_key for kw in tier):
-                # For Methods sections, sub-filter to keep only relevant paragraphs
-                if any(kw in heading_key for kw in _PRIORITY_HEADINGS[0]):
-                    cleaned = _clean_for_llm(_filter_methods_section(section_text))
-                else:
-                    cleaned = _clean_for_llm(section_text)
-
+                cleaned = _clean_for_llm(section_text)
                 if sum(len(b) for b in blocks) + len(cleaned) < max_chars:
                     blocks.append(cleaned)
                     used_keys.add(heading_key)
+                    
+    # Ensure no data is lost by appending any unassigned valid sections
+    for heading_key, section_text in sections.items():
+        if heading_key in used_keys:
+            continue
+        if any(skip in heading_key for skip in _SKIP_HEADINGS):
+            continue
+        cleaned = _clean_for_llm(section_text)
+        if sum(len(b) for b in blocks) + len(cleaned) < max_chars:
+            blocks.append(cleaned)
+            used_keys.add(heading_key)
 
     return "\n\n---\n\n".join(blocks)
 
@@ -377,6 +380,7 @@ def extract_text_data(state: WorkflowState) -> WorkflowState:
         model="qwen3.5:35b",
         base_url="http://localhost:11434",
         temperature=0.0,
+        num_ctx=32768,
     )
 
     # Use raw JSON output instead of structured output (more reliable with Qwen)
@@ -449,7 +453,7 @@ CRITICAL INSTRUCTIONS:
 
 7. Set null ONLY if the value is truly not mentioned anywhere in the text.
 
-Respond with ONLY the JSON, no other text."""
+CRITICAL: DO NOT output any markdown tables. DO NOT output conversational text. Output ONLY the raw JSON object starting with `{` and ending with `}`."""
 
     from langchain_core.messages import SystemMessage, HumanMessage
 
@@ -463,19 +467,21 @@ Respond with ONLY the JSON, no other text."""
         result = llm.invoke(messages)
         raw_text = result.content.strip()
 
+        # Handle <think>...</think> blocks from Qwen
+        if "<think>" in raw_text:
+            raw_text = raw_text.split("</think>")[-1].strip()
+
         # Parse JSON from response (handle ```json ... ``` blocks)
         if "```json" in raw_text:
             raw_text = raw_text.split("```json", 1)[1].rsplit("```", 1)[0].strip()
         elif "```" in raw_text:
             raw_text = raw_text.split("```", 1)[1].rsplit("```", 1)[0].strip()
-
-        # Handle <think>...</think> blocks from Qwen
-        if "<think>" in raw_text:
-            raw_text = raw_text.split("</think>")[-1].strip()
-            if "```json" in raw_text:
-                raw_text = raw_text.split("```json", 1)[1].rsplit("```", 1)[0].strip()
-            elif "```" in raw_text:
-                raw_text = raw_text.split("```", 1)[1].rsplit("```", 1)[0].strip()
+        else:
+            # Fallback for conversational output: find first { and last }
+            start = raw_text.find('{')
+            end = raw_text.rfind('}')
+            if start != -1 and end != -1 and end > start:
+                raw_text = raw_text[start:end+1]
 
         parsed = json.loads(raw_text)
         experiments_data = parsed.get("experiments", [])

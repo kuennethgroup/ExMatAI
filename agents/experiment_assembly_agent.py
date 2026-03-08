@@ -106,6 +106,28 @@ def assemble_final_json(state: WorkflowState) -> WorkflowState:
                 })
         exp["Voltage_Profile_Data"] = voltage_data_list if voltage_data_list else None
 
+    # -- 1.5. Gather all valid unmapped SMILES ---------------------------
+    mapped_to_experiments = set()
+    for exp in experiments_data:
+        s_neg = exp.get("SMILES_Negative")
+        if s_neg: mapped_to_experiments.add(s_neg)
+        s_pos = exp.get("SMILES_Positive")
+        if s_pos: mapped_to_experiments.add(s_pos)
+
+    unmapped_smiles = []
+    for rs in state.get("raw_smiles", []):
+        img_path = rs.get("image_path")
+        for entry in rs.get("smiles_list", []):
+            s = entry.get("smiles")
+            if s and isinstance(s, str) and s.strip():
+                s_strip = s.strip()
+                if s_strip not in mapped_to_experiments:
+                    unmapped_smiles.append({
+                        "smiles": s_strip,
+                        "image_path": img_path,
+                        "crop_path": entry.get("crop_path")
+                    })
+
     # -- 2. Build final output ------------------------------------------
     pdf_name = Path(state["pdf_path"]).stem
 
@@ -125,6 +147,7 @@ def assemble_final_json(state: WorkflowState) -> WorkflowState:
             "total_smiles_mapped": len(mapped_smiles),
             "total_plots_extracted": len(extracted_plot_data),
         },
+        "unmapped_smiles_in_paper": unmapped_smiles,
         "experiments": experiments_data,
     }
 
