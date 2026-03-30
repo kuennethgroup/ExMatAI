@@ -6,6 +6,7 @@ dist/
 wheels/
 *.egg-info
 old
+old_2
 DeepSeek-OCR
 sample_papers
 sample_outputs
@@ -20,6 +21,12 @@ models
 logs
 thesis_outline.md
 workflow.md
+plots_data
+plots_data_output
 
 # Virtual environments
 .venv
+plot_extract.md
+text_extract.md
+text_extract_analysis.md
+appendix.tex

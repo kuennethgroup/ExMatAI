@@ -27,7 +27,7 @@ import requests
 from utils.state_schema import WorkflowState
 
 # =======================================================================
-# FastChartExtractor (from modules/plots_extract.py)
+# FastChartExtractor
 # =======================================================================
 
 
@@ -222,12 +222,14 @@ Format EXACTLY like this example:
             if "min" in right_y_info and "max" in right_y_info:
                 ax_right.set_ylim(right_y_info["min"], right_y_info["max"])
         if lines:
-            ax_left.legend(lines, labels, loc="best")
+            fig_plot.legend(lines, labels, loc="lower center",
+                            ncol=min(len(lines), 3),
+                            bbox_to_anchor=(0.5, -0.02), frameon=True)
         plt.title("Reconstructed Chart")
         ax_left.grid(True, linestyle="--", alpha=0.5)
         plot_path = os.path.join(output_dir, f"{safe_tag}_reconstructed.png")
-        plt.tight_layout()
-        plt.savefig(plot_path, dpi=300)
+        plt.tight_layout(rect=[0, 0.05, 1, 1])
+        plt.savefig(plot_path, dpi=300, bbox_inches="tight")
         plt.close(fig_plot)
 
         return {"csv_path": csv_path, "plot_path": plot_path, "metadata": metadata}
